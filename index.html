@@ -85,8 +85,7 @@
     // URL Google Apps Script kamu
     const scriptURL = "https://script.google.com/macros/s/AKfycbxFG3il4-dJYmV7iVQxsPfQc_ZZr8-YJ-oBGdmwnAVm5gatNhEy5xPMUN2EXJ0vegh5Xg/exec";
     // Proxy agar lolos CORS
-    const corsProxy = "https://corsproxy.io/?";
-    const url = corsProxy + encodeURIComponent(scriptURL);
+    const url = scriptURL; // tanpa proxy
 
     async function loadData() {
       try {
