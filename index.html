@@ -1,114 +1,141 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Data Barang</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Rokok</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
-    table { width:100%; border-collapse: collapse; margin-top:20px; }
-    th, td { border:1px solid #ccc; padding:8px; text-align:left; }
-    th { background:#eee; }
-    form { margin-top:20px; }
-    input { margin-right:8px; padding:6px; }
-    button { padding:6px 12px; }
-    #status { margin-top:10px; color:#333; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
+    }
+    h2 {
+      text-align: center;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #007bff;
+      color: white;
+    }
   </style>
 </head>
 <body>
-  <h1>Data Barang</h1>
-  <button id="reloadBtn">Muat Ulang Data</button>
+
+  <h2>📋 Data Rokok</h2>
+
+  <form id="dataForm">
+    <input type="text" id="nama" placeholder="Nama Rokok" required />
+    <input type="number" id="hrg" placeholder="Harga" required />
+    <input type="number" id="isi" placeholder="Isi (btg)" required />
+    <input type="number" id="pcs" placeholder="Jumlah (pcs)" required />
+    <button type="submit">Kirim Data</button>
+  </form>
+
   <table id="dataTable">
     <thead>
       <tr>
         <th>Nama</th>
         <th>Harga</th>
         <th>Isi</th>
-        <th>PCS</th>
+        <th>Pcs</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <h2>Tambah Data Baru</h2>
-  <form id="dataForm">
-    <input name="nama" placeholder="Nama Barang" required />
-    <input name="hrg" type="number" placeholder="Harga" required />
-    <input name="isi" type="number" placeholder="Isi" required />
-    <input name="pcs" type="number" placeholder="PCS" required />
-    <button type="submit">Kirim</button>
-  </form>
-
-  <div id="status">Status: —</div>
-
   <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzvnKtHIrEYWwocIbF3f6IqmRiN0MXnfvt0OHDDkh9wO5-wSXNGWK7VcF5_LWsiPJaSdg/exec'; // GANTI dengan URL kamu
-
-    const statusEl = document.getElementById('status');
-    const dataTableBody = document.querySelector('#dataTable tbody');
-    const reloadBtn = document.getElementById('reloadBtn');
-    const dataForm = document.getElementById('dataForm');
-
-    async function setStatus(msg, isError=false) {
-      statusEl.textContent = "Status: " + msg;
-      statusEl.style.color = isError ? 'red' : '#333';
-    }
+    // URL Google Apps Script kamu
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzvnKtHIrEYWwocIbF3f6IqmRiN0MXnfvt0OHDDkh9wO5-wSXNGWK7VcF5_LWsiPJaSdg/exec";
+    // Proxy agar lolos CORS
+    const corsProxy = "https://corsproxy.io/?";
+    const url = corsProxy + encodeURIComponent(scriptURL);
 
     async function loadData() {
-      setStatus('Memuat data…');
       try {
-        const res = await fetch(scriptURL);
-        if (!res.ok) throw new Error('HTTP status ' + res.status);
+        const res = await fetch(url);
         const data = await res.json();
 
-        dataTableBody.innerHTML = '';
-        data.forEach(item => {
-          const tr = document.createElement('tr');
+        const tbody = document.querySelector("#dataTable tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(row => {
+          const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${item.nama}</td>
-            <td>${item.hrg}</td>
-            <td>${item.isi}</td>
-            <td>${item.pcs}</td>
+            <td>${row.nama}</td>
+            <td>${row.hrg}</td>
+            <td>${row.isi}</td>
+            <td>${row.pcs}</td>
           `;
-          dataTableBody.appendChild(tr);
+          tbody.appendChild(tr);
         });
-        setStatus('Data berhasil dimuat (' + data.length + ' baris)');
       } catch (err) {
-        setStatus('Gagal memuat data: ' + err.message, true);
+        console.error("Gagal memuat data:", err);
       }
     }
 
-    dataForm.addEventListener('submit', async e => {
+    document.getElementById("dataForm").addEventListener("submit", async e => {
       e.preventDefault();
-      const formData = new FormData(dataForm);
+
       const payload = {
-        nama: formData.get('nama'),
-        hrg: formData.get('hrg'),
-        isi: formData.get('isi'),
-        pcs: formData.get('pcs')
+        nama: document.getElementById("nama").value,
+        hrg: document.getElementById("hrg").value,
+        isi: document.getElementById("isi").value,
+        pcs: document.getElementById("pcs").value
       };
-      setStatus('Mengirim data…');
+
       try {
-        const res = await fetch(scriptURL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        await fetch(url, {
+          method: "POST",
           body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error('HTTP status ' + res.status);
-        const result = await res.json();
-        if (result.status === 'success') {
-          setStatus('Data berhasil disimpan!');
-          dataForm.reset();
-          loadData();
-        } else {
-          throw new Error(result.error || 'Error tidak diketahui');
-        }
+        alert("✅ Data berhasil dikirim!");
+        e.target.reset();
+        loadData();
       } catch (err) {
-        setStatus('Gagal kirim data: ' + err.message, true);
+        console.error("Gagal mengirim data:", err);
+        alert("❌ Gagal mengirim data!");
       }
     });
 
-    reloadBtn.addEventListener('click', () => loadData());
+    // otomatis ambil data saat halaman dibuka
     loadData();
   </script>
 </body>
