@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Barang</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    table { width:100%; border-collapse: collapse; margin-top:20px; }
+    th, td { border:1px solid #ccc; padding:8px; text-align:left; }
+    th { background:#eee; }
+    form { margin-top:20px; }
+    input { margin-right:8px; padding:6px; }
+    button { padding:6px 12px; }
+    #status { margin-top:10px; color:#333; }
+  </style>
+</head>
+<body>
+  <h1>Data Barang</h1>
+  <button id="reloadBtn">Muat Ulang Data</button>
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Harga</th>
+        <th>Isi</th>
+        <th>PCS</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Tambah Data Baru</h2>
+  <form id="dataForm">
+    <input name="nama" placeholder="Nama Barang" required />
+    <input name="hrg" type="number" placeholder="Harga" required />
+    <input name="isi" type="number" placeholder="Isi" required />
+    <input name="pcs" type="number" placeholder="PCS" required />
+    <button type="submit">Kirim</button>
+  </form>
+
+  <div id="status">Status: —</div>
+
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzvnKtHIrEYWwocIbF3f6IqmRiN0MXnfvt0OHDDkh9wO5-wSXNGWK7VcF5_LWsiPJaSdg/exec'; // GANTI dengan URL kamu
+
+    const statusEl = document.getElementById('status');
+    const dataTableBody = document.querySelector('#dataTable tbody');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const dataForm = document.getElementById('dataForm');
+
+    async function setStatus(msg, isError=false) {
+      statusEl.textContent = "Status: " + msg;
+      statusEl.style.color = isError ? 'red' : '#333';
+    }
+
+    async function loadData() {
+      setStatus('Memuat data…');
+      try {
+        const res = await fetch(scriptURL);
+        if (!res.ok) throw new Error('HTTP status ' + res.status);
+        const data = await res.json();
+
+        dataTableBody.innerHTML = '';
+        data.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${item.nama}</td>
+            <td>${item.hrg}</td>
+            <td>${item.isi}</td>
+            <td>${item.pcs}</td>
+          `;
+          dataTableBody.appendChild(tr);
+        });
+        setStatus('Data berhasil dimuat (' + data.length + ' baris)');
+      } catch (err) {
+        setStatus('Gagal memuat data: ' + err.message, true);
+      }
+    }
+
+    dataForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const formData = new FormData(dataForm);
+      const payload = {
+        nama: formData.get('nama'),
+        hrg: formData.get('hrg'),
+        isi: formData.get('isi'),
+        pcs: formData.get('pcs')
+      };
+      setStatus('Mengirim data…');
+      try {
+        const res = await fetch(scriptURL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('HTTP status ' + res.status);
+        const result = await res.json();
+        if (result.status === 'success') {
+          setStatus('Data berhasil disimpan!');
+          dataForm.reset();
+          loadData();
+        } else {
+          throw new Error(result.error || 'Error tidak diketahui');
+        }
+      } catch (err) {
+        setStatus('Gagal kirim data: ' + err.message, true);
+      }
+    });
+
+    reloadBtn.addEventListener('click', () => loadData());
+    loadData();
+  </script>
+</body>
+</html>
