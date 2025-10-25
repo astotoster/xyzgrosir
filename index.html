@@ -3,83 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Data Rokok</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f5f5f5;
-    }
-    h2 {
-      text-align: center;
-    }
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    input {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      box-sizing: border-box;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background: #007bff;
-      color: white;
-    }
-  </style>
+  <title>xyzgrosir</title>
+  <link href="style.css" rel="stylesheet" />
 </head>
-<body>
 
-  <h2>📋 Data Rokok</h2>
+<body>
+  <header class="navbar">
+    <a href="index.html"><span class="brand-yellow">xyz</span> <span class="brand-lblue">grosir</span> </a>
+    <div id="navbarSearch" class="navbarsearch">
+      <input class="" type="text" placeholder="Cari produk" aria-label="Search">
+    </div>
+  </header>
+
+<div class="container">
+  <h2>Daftar harga produk</h2>
 
   <form id="dataForm">
-    <input type="text" id="nama" placeholder="Nama Rokok" required />
+    <input type="text" id="nama" placeholder="Nama" required />
     <input type="number" id="hrg" placeholder="Harga" required />
-    <input type="number" id="isi" placeholder="Isi (btg)" required />
-    <input type="number" id="pcs" placeholder="Jumlah (pcs)" required />
+    <input type="number" id="isi" placeholder="Isi" required />
     <button type="submit">Kirim Data</button>
   </form>
 
-  <table id="dataTable">
+  <table id="dataTable" class="table-harga">
     <thead>
       <tr>
-        <th>Nama</th>
-        <th>Harga</th>
-        <th>Isi</th>
-        <th>Pcs</th>
+        <th class="th-nomor">#</th>
+        <th class="th-nama">Nama</th>
+        <th class="th-harga">Harga</th>
+        <th class="th-isi">Isi</th>
+        <th class="th-pcs">Pcs</th>
+        <th class="th-kategori">Kategori</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
+
+   </div>
 
   <script>
     // URL Google Apps Script kamu
@@ -95,13 +55,15 @@
         const tbody = document.querySelector("#dataTable tbody");
         tbody.innerHTML = "";
 
-        data.forEach(row => {
+         data.forEach((row, index) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${row.nama}</td>
-            <td>${row.hrg}</td>
-            <td>${row.isi}</td>
-            <td>${row.pcs}</td>
+            <td class="td-nomor">${index + 1}</td>
+            <td class="td-nama">${row.nama}</td>
+            <td class="td-harga">${Number(row.hrg).toLocaleString('id-ID')}</td>
+            <td class="td-isi">${Number(row.isi).toLocaleString('id-ID')}</td>
+            <td class="td-pcs">${Math.round(row.hrg / row.isi).toLocaleString('id-ID')}</td>
+
           `;
           tbody.appendChild(tr);
         });
@@ -116,8 +78,7 @@
       const payload = {
         nama: document.getElementById("nama").value,
         hrg: document.getElementById("hrg").value,
-        isi: document.getElementById("isi").value,
-        pcs: document.getElementById("pcs").value
+        isi: document.getElementById("isi").value
       };
 
       try {
