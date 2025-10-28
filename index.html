@@ -9,94 +9,55 @@
 
 <body>
   <header class="navbar">
-    <a href="index.html"><span class="brand-yellow">xyz</span> <span class="brand-lblue">grosir</span> </a>
-    <div id="navbarSearch" class="navbarsearch">
-      <input class="" type="text" placeholder="Cari produk" aria-label="Search">
+    <a href="index.html"><span class="brand-yellow">xyz</span> <span class="brand-lblue">grosir</span></a>
+
+    <div class="navbarrightbutton">
+        <div class="navbarsearch">
+          <input type="text" id="searchInput" placeholder="Cari produk" aria-label="Search">
+        </div>
+        <button id="addBtn" class="btn-add">+</button>
     </div>
   </header>
 
 <div class="container">
   <h2>Daftar harga produk</h2>
 
-  <form id="dataForm">
-    <input type="text" id="nama" placeholder="Nama" required />
-    <input type="number" id="hrg" placeholder="Harga" required />
-    <input type="number" id="isi" placeholder="Isi" required />
-    <button type="submit">Kirim Data</button>
-  </form>
+  <!-- Filter kategori -->
+  <div id="categoryFilter" class="category-filter">
+    <button class="cat-btn active" data-cat="all">Semua</button>
+    <!-- tombol kategori akan di-generate dari JS -->
+  </div>
 
   <table id="dataTable" class="table-harga">
     <thead>
       <tr>
-        <th class="th-nomor">#</th>
-        <th class="th-nama">Nama</th>
-        <th class="th-harga">Harga</th>
-        <th class="th-isi">Isi</th>
-        <th class="th-pcs">Pcs</th>
-        <th class="th-kategori">Kategori</th>
+        <th>#</th>
+        <th>Nama</th>
+        <th>Harga</th>
+        <th>Isi</th>
+        <th>Pcs</th>
+        <th>Kategori</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
+</div>
 
-   </div>
+<!-- Modal Form -->
+<div id="dataModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3>Tambah Produk</h3>
+    <form id="dataForm">
+      <input type="text" id="nama" placeholder="Nama" required />
+      <input type="number" id="hrg" placeholder="Harga" required />
+      <input type="number" id="isi" placeholder="Isi" required />
+      <input type="text" id="kategori" placeholder="Kategori" required />
+      <button type="submit">Kirim Data</button>
+    </form>
+  </div>
+</div>
 
-  <script>
-    // URL Google Apps Script kamu
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxFG3il4-dJYmV7iVQxsPfQc_ZZr8-YJ-oBGdmwnAVm5gatNhEy5xPMUN2EXJ0vegh5Xg/exec";
-    // Proxy agar lolos CORS
-    const url = scriptURL; // tanpa proxy
-
-    async function loadData() {
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const tbody = document.querySelector("#dataTable tbody");
-        tbody.innerHTML = "";
-
-         data.forEach((row, index) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td class="td-nomor">${index + 1}</td>
-            <td class="td-nama">${row.nama}</td>
-            <td class="td-harga">${Number(row.hrg).toLocaleString('id-ID')}</td>
-            <td class="td-isi">${Number(row.isi).toLocaleString('id-ID')}</td>
-            <td class="td-pcs">${Math.round(row.hrg / row.isi).toLocaleString('id-ID')}</td>
-
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error("Gagal memuat data:", err);
-      }
-    }
-
-    document.getElementById("dataForm").addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const payload = {
-        nama: document.getElementById("nama").value,
-        hrg: document.getElementById("hrg").value,
-        isi: document.getElementById("isi").value
-      };
-
-      try {
-        await fetch(url, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
-        alert("✅ Data berhasil dikirim!");
-        e.target.reset();
-        loadData();
-      } catch (err) {
-        console.error("Gagal mengirim data:", err);
-        alert("❌ Gagal mengirim data!");
-      }
-    });
-
-    // otomatis ambil data saat halaman dibuka
-    loadData();
-  </script>
+<script src="script.js"></script>
 </body>
 </html>
