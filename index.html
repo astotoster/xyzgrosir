@@ -14,19 +14,24 @@
     <div class="navbarrightbutton">
         <div class="navbarsearch">
           <input type="text" id="searchInput" placeholder="Cari produk" aria-label="Search">
-        </div>
-        <button id="addBtn" class="btn-add">+</button>
+      </div>
+
+      <!-- Filter kategori -->
+      <div class="filter-container">
+          <select id="filterKategori">
+            <option value="">Semua</option>
+            <!-- opsi kategori akan diisi otomatis dari data -->
+        </select>
     </div>
+
+    <button id="addBtn" class="btn-add">+</button>
+</div>
   </header>
 
 <div class="container">
-  <h2>Daftar harga produk</h2>
+  <!-- <h2>Daftar harga produk</h2> -->
 
-  <!-- Filter kategori -->
-  <div id="categoryFilter" class="category-filter">
-    <button class="cat-btn active" data-cat="all">Semua</button>
-    <!-- tombol kategori akan di-generate dari JS -->
-  </div>
+  
 
   <table id="dataTable" class="table-harga">
     <thead>

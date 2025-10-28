@@ -35,34 +35,55 @@ function renderTable(list) {
       <td class="td-harga">${Number(row.hrg).toLocaleString('id-ID')}</td>
       <td class="td-isi">${Number(row.isi).toLocaleString('id-ID')}</td>
       <td class="td-pcs">${pcs.toLocaleString('id-ID')}</td>
-      <td>${row.kategori}</td>
+      <td class="td-kategori">${row.kategori}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
 // --- CATEGORY BUTTONS ---
-function renderCategoryButtons(list) {
-  const container = document.getElementById("categoryFilter");
-  const cats = [...new Set(list.map(r => r.kategori).filter(Boolean))];
-  container.innerHTML = '<button class="cat-btn active" data-cat="all">Semua</button>';
-  cats.forEach(c => {
-    const btn = document.createElement("button");
-    btn.className = "cat-btn";
-    btn.textContent = c;
-    btn.dataset.cat = c.toLowerCase();
-    container.appendChild(btn);
-  });
+const filterKategori = document.getElementById("filterKategori");
 
-  container.querySelectorAll(".cat-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      container.querySelectorAll(".cat-btn").forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      currentCategory = btn.dataset.cat;
-      renderTable(dataCache);
-    });
+function populateKategoriDropdown() {
+  const kategoriSet = new Set(dataCache.map(row => row.kategori).filter(k => k));
+  filterKategori.innerHTML = '<option value="">Semua</option>';
+  kategoriSet.forEach(k => {
+    const option = document.createElement("option");
+    option.value = k;
+    option.textContent = k;
+    filterKategori.appendChild(option);
   });
 }
+
+async function loadData() {
+  try {
+    const res = await fetch(scriptURL);
+    let data = await res.json();
+    data = data.filter(row => row.nama && row.hrg && row.isi);
+    data.sort((a, b) => String(a.nama).localeCompare(String(b.nama)));
+    dataCache = data;
+    renderTable(dataCache);
+    populateKategoriDropdown(); // isi dropdown kategori
+  } catch (err) {
+    console.error("Gagal memuat data:", err);
+  }
+}
+
+filterKategori.addEventListener("change", () => {
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
+  const selectedKategori = filterKategori.value;
+  
+  const filtered = dataCache.filter(row => {
+    const nama = row.nama ? String(row.nama).toLowerCase() : "";
+    const kategori = row.kategori ? String(row.kategori) : "";
+    const matchKeyword = nama.includes(keyword) || kategori.toLowerCase().includes(keyword);
+    const matchKategori = !selectedKategori || kategori === selectedKategori;
+    return matchKeyword && matchKategori;
+  });
+
+  renderTable(filtered);
+});
+
 
 // --- POPUP MODAL ---
 const modal = document.getElementById("dataModal");
