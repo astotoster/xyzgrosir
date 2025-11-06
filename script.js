@@ -125,6 +125,72 @@ document.getElementById("dataForm").addEventListener("submit", async e=>{
   }
 });
 
+// --POP UP MODAL EDIT HARGA--
+let selectedIndex = null;
+
+// Tambahkan event click di setiap row setelah render
+function renderTable(list) {
+  const tbody = document.querySelector("#dataTable tbody");
+  tbody.innerHTML = "";
+
+  list.forEach((row, index) => {
+    const pcs = Math.round(Number(row.hrg) / Number(row.isi));
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td >${index + 1}</td>
+      <td class="td-nama">${row.nama}</td>
+      <td class="td-harga">${Number(row.hrg).toLocaleString('id-ID')}</td>
+      <td class="td-isi">${Number(row.isi).toLocaleString('id-ID')}</td>
+      <td class="td-pcs">${pcs.toLocaleString('id-ID')}</td>
+      <td class="td-kategori">${row.kategori}</td>
+    `;
+
+    tr.addEventListener("click", () => openEditModal(index));
+    tbody.appendChild(tr);
+  });
+}
+
+// Buka modal dan isi dengan harga saat ini
+function openEditModal(index) {
+  selectedIndex = index;
+  document.getElementById("editHrg").value = dataCache[index].hrg;
+  document.getElementById("editModal").style.display = "flex";
+}
+
+// Tutup modal
+function closeEditModal() {
+  document.getElementById("editModal").style.display = "none";
+}
+
+// Tombol Simpan Edit
+document.getElementById("saveEditBtn").addEventListener("click", async () => {
+  const newHarga = Number(document.getElementById("editHrg").value);
+  if (!newHarga) return alert("Isi harga dengan benar!");
+
+  dataCache[selectedIndex].hrg = newHarga;
+
+  renderTable(dataCache);
+  highlightNewRow(dataCache[selectedIndex].nama);
+
+  // Kirim update ke server
+  await fetch(scriptURL, {
+    method: "POST",
+    body: JSON.stringify({
+      nama: dataCache[selectedIndex].nama,
+      hrg: newHarga,
+      isi: dataCache[selectedIndex].isi,
+      kategori: dataCache[selectedIndex].kategori,
+      update: true
+    })
+  });
+
+  closeEditModal();
+});
+
+document.getElementById("cancelEditBtn").addEventListener("click", closeEditModal);
+
+
 // --- HIGHLIGHT NEW ROW ---
 function highlightNewRow(nama){
   const rows = document.querySelectorAll("#dataTable tbody tr");
