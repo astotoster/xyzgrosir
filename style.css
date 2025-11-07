@@ -228,15 +228,31 @@ th {
 .modal-content {
   background: white;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 5px;
   width: 260px;
-  text-align: center;
 }
 
 .modal-actions {
   margin-top: 10px;
   display: flex;
   justify-content: space-between;
+}
+
+.modal-actions input {
+    margin-bottom: 0;
+}
+
+.modal-actions button {
+    margin-left: 10px;
+}
+
+.modal-content p {
+    margin: 0;
+    font-size: 13px;
+}
+
+.modal-content h3 {
+    margin: 10px 0;
 }
 
 td {

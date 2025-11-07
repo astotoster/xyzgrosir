@@ -65,11 +65,13 @@
 
 <div id="editModal" class="modal">
   <div class="modal-content">
-    <h3>Edit Harga</h3>
-    <input type="number" id="editHrg" placeholder="Harga baru" required />
+    <p id="displayKategori"></p>
+    <h3 id="displayNama"></h3>    
+    <p>Harga: <span id="displayHrg"></span> / <span id="displayIsi"></span></p>
+    
     <div class="modal-actions">
-      <button id="saveEditBtn">Simpan</button>
-      <button id="cancelEditBtn">Batal</button>
+        <input type="number" id="editHrg" placeholder="Harga baru" required />
+        <button id="saveEditBtn">Ubah</button>
     </div>
   </div>
 </div>

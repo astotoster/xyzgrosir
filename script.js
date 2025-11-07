@@ -154,7 +154,13 @@ function renderTable(list) {
 // Buka modal dan isi dengan harga saat ini
 function openEditModal(index) {
   selectedIndex = index;
-  document.getElementById("editHrg").value = dataCache[index].hrg;
+
+  document.getElementById("displayNama").textContent = dataCache[index].nama;
+  document.getElementById("displayHrg").textContent = Number(dataCache[index].hrg).toLocaleString('id-ID');
+  document.getElementById("displayIsi").textContent = Number(dataCache[index].isi).toLocaleString('id-ID');
+  document.getElementById("displayKategori").textContent = dataCache[index].kategori;
+
+  document.getElementById("editHrg").value = Number(dataCache[index].hrg).toLocaleString('id-ID');
   document.getElementById("editModal").style.display = "flex";
 }
 
@@ -188,7 +194,13 @@ document.getElementById("saveEditBtn").addEventListener("click", async () => {
   closeEditModal();
 });
 
-document.getElementById("cancelEditBtn").addEventListener("click", closeEditModal);
+// ⭐ TAMBAHAN UNTUK MENUTUP MODAL JIKA KLIK DI LUAR AREA KONTEN ⭐
+document.getElementById("editModal").addEventListener("click", function(event) {
+    // Jika target klik adalah elemen modal itu sendiri (area backdrop)
+    if (event.target === this) {
+        closeEditModal();
+    }
+});
 
 
 // --- HIGHLIGHT NEW ROW ---
