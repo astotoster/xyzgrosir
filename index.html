@@ -29,10 +29,11 @@
   </header>
 
 <div class="container">
+    <div id="loadingIndicator" class="loading-overlay">
+        <div class="spinner"></div>
+        <span>Memuat data...</span>
+    </div>
   <!-- <h2>Daftar harga produk</h2> -->
-
-  
-
   <table id="dataTable" class="table-harga">
     <thead>
       <tr>
@@ -65,12 +66,19 @@
 
 <div id="editModal" class="modal">
   <div class="modal-content">
-    <p id="displayKategori"></p>
-    <h3 id="displayNama"></h3>    
-    <p>Harga: <span id="displayHrg"></span> / <span id="displayIsi"></span></p>
+    <h3 id="displayNama"></h3> 
+    <div class="textbold">Rp: <span id="displayHrg"></span></div>
     
+    <div class="separator"></div>
+    <p>Isi /dus : <span id="displayIsi"></span></p>
+    <div class="separator"></div>
+    <p>Harga /pcs : <span id="displayPcs"></span></p>
+    <div class="separator"></div>
+    <p>Kategori : <span id="displayKategori"></span></p>
+    <div class="separator"></div>
+    
+    <input type="number" id="editHrg" placeholder="Harga baru" required />
     <div class="modal-actions">
-        <input type="number" id="editHrg" placeholder="Harga baru" required />
         <button id="saveEditBtn">Ubah</button>
     </div>
   </div>

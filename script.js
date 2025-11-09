@@ -1,6 +1,24 @@
 const scriptURL = "https://script.google.com/macros/s/AKfycbzjWjdmlCZJTDRfMZ4FiVfpWI5Pt3UapZUHbXVwNQm1h-yiPru6_6bjH70rNzbglgKq/exec";
 let dataCache = [];
 let currentCategory = "all";
+let displayedData = [];
+
+// Ambil elemen loading
+const loadingIndicator = document.getElementById("loadingIndicator");
+
+// Fungsi untuk menampilkan loading
+function showLoading() {
+  if (loadingIndicator) {
+    loadingIndicator.classList.remove("hidden");
+  }
+}
+
+// Fungsi untuk menyembunyikan loading
+function hideLoading() {
+  if (loadingIndicator) {
+    loadingIndicator.classList.add("hidden");
+  }
+}
 
 // --- LOAD DATA ---
 async function loadData() {
@@ -13,9 +31,14 @@ async function loadData() {
     dataCache = data;
 
     renderTable(dataCache);
-    renderCategoryButtons(dataCache);
+    populateKategoriDropdown();
 
-  } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Gagal memuat data:", err);
+    } finally {
+      // 2. Sembunyikan loading, terlepas dari hasil try/catch
+      hideLoading();  
+    }
 }
 
 // --- RENDER TABLE ---
@@ -26,20 +49,29 @@ function renderTable(list) {
   const filtered = currentCategory === "all" ? list :
     list.filter(r => (r.kategori||"").toLowerCase() === currentCategory);
 
-  filtered.forEach((row, i) => {
+  // ⭐ BARU: Simpan data yang difilter ke displayedData
+  displayedData = filtered;
+
+  // Ubah list menjadi displayedData
+  displayedData.forEach((row, index) => { // Gunakan 'index' dari displayedData
     const pcs = Math.round(Number(row.hrg)/Number(row.isi));
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${i+1}</td>
+      <td>${index + 1}</td>
       <td class="td-nama">${row.nama}</td>
       <td class="td-harga">${Number(row.hrg).toLocaleString('id-ID')}</td>
       <td class="td-isi">${Number(row.isi).toLocaleString('id-ID')}</td>
       <td class="td-pcs">${pcs.toLocaleString('id-ID')}</td>
       <td class="td-kategori">${row.kategori}</td>
     `;
+    
+    // ⭐ PENTING: Gunakan index dari displayedData, ini sudah benar
+    tr.addEventListener("click", () => openEditModal(index));
     tbody.appendChild(tr);
   });
 }
+
+
 
 // --- CATEGORY BUTTONS ---
 const filterKategori = document.getElementById("filterKategori");
@@ -55,19 +87,6 @@ function populateKategoriDropdown() {
   });
 }
 
-async function loadData() {
-  try {
-    const res = await fetch(scriptURL);
-    let data = await res.json();
-    data = data.filter(row => row.nama && row.hrg && row.isi);
-    data.sort((a, b) => String(a.nama).localeCompare(String(b.nama)));
-    dataCache = data;
-    renderTable(dataCache);
-    populateKategoriDropdown(); // isi dropdown kategori
-  } catch (err) {
-    console.error("Gagal memuat data:", err);
-  }
-}
 
 filterKategori.addEventListener("change", () => {
   const keyword = document.getElementById("searchInput").value.toLowerCase();
@@ -128,17 +147,23 @@ document.getElementById("dataForm").addEventListener("submit", async e=>{
 // --POP UP MODAL EDIT HARGA--
 let selectedIndex = null;
 
-// Tambahkan event click di setiap row setelah render
+// --- RENDER TABLE --- (Ini adalah fungsi yang harus dipertahankan)
 function renderTable(list) {
   const tbody = document.querySelector("#dataTable tbody");
-  tbody.innerHTML = "";
+    tbody.innerHTML = "";
 
-  list.forEach((row, index) => {
-    const pcs = Math.round(Number(row.hrg) / Number(row.isi));
+  const filtered = currentCategory === "all" ? list :
+    list.filter(r => (r.kategori||"").toLowerCase() === currentCategory);
+
+  // ⭐ KUNCI: Simpan data yang difilter ke displayedData
+  displayedData = filtered;
+
+  // Gunakan displayedData untuk looping
+  displayedData.forEach((row, index) => { 
+    const pcs = Math.round(Number(row.hrg)/Number(row.isi));
     const tr = document.createElement("tr");
-
     tr.innerHTML = `
-      <td >${index + 1}</td>
+      <td>${index + 1}</td>
       <td class="td-nama">${row.nama}</td>
       <td class="td-harga">${Number(row.hrg).toLocaleString('id-ID')}</td>
       <td class="td-isi">${Number(row.isi).toLocaleString('id-ID')}</td>
@@ -146,21 +171,33 @@ function renderTable(list) {
       <td class="td-kategori">${row.kategori}</td>
     `;
 
+    // ⭐ KUNCI: Event listener harus ada di sini
     tr.addEventListener("click", () => openEditModal(index));
     tbody.appendChild(tr);
-  });
+});
 }
+
 
 // Buka modal dan isi dengan harga saat ini
 function openEditModal(index) {
   selectedIndex = index;
+  // ⭐ UBAH: Ambil data dari displayedData
+  const item = displayedData[index]; 
+  
+  // Pastikan item ada
+  if (!item) return;
 
-  document.getElementById("displayNama").textContent = dataCache[index].nama;
-  document.getElementById("displayHrg").textContent = Number(dataCache[index].hrg).toLocaleString('id-ID');
-  document.getElementById("displayIsi").textContent = Number(dataCache[index].isi).toLocaleString('id-ID');
-  document.getElementById("displayKategori").textContent = dataCache[index].kategori;
+  document.getElementById("displayNama").textContent = item.nama;
+  document.getElementById("displayHrg").textContent = Number(item.hrg).toLocaleString('id-ID');
+  document.getElementById("displayIsi").textContent = Number(item.isi).toLocaleString('id-ID');
+  // Catatan: Anda tidak menyimpan 'pcs' di dataCache. Hitung ulang jika perlu,
+  // atau ambil nilai pcs yang sudah dihitung jika ada. Karena Anda tidak menyimpannya
+  // di dataCache, hitungan pcs mungkin perlu disesuaikan di sini.
+  const pcs = Math.round(Number(item.hrg) / Number(item.isi));
+  document.getElementById("displayPcs").textContent = pcs.toLocaleString('id-ID'); 
+  document.getElementById("displayKategori").textContent = item.kategori;
 
-  document.getElementById("editHrg").value = Number(dataCache[index].hrg).toLocaleString('id-ID');
+  document.getElementById("editHrg").value = Number(item.hrg); // Nilai untuk input harus berupa angka mentah (tanpa toLocaleString)
   document.getElementById("editModal").style.display = "flex";
 }
 
@@ -172,21 +209,39 @@ function closeEditModal() {
 // Tombol Simpan Edit
 document.getElementById("saveEditBtn").addEventListener("click", async () => {
   const newHarga = Number(document.getElementById("editHrg").value);
-  if (!newHarga) return alert("Isi harga dengan benar!");
+  if (!newHarga || newHarga <= 0) return alert("Isi harga dengan benar!");
 
-  dataCache[selectedIndex].hrg = newHarga;
+  // 1. Ambil data item saat ini dari displayedData
+  const itemToUpdate = displayedData[selectedIndex];
+  if (!itemToUpdate) return;
+  
+  // 2. Cari index item ini di dataCache (data mentah) menggunakan nama
+  const cacheIndex = dataCache.findIndex(row => row.nama === itemToUpdate.nama);
 
-  renderTable(dataCache);
-  highlightNewRow(dataCache[selectedIndex].nama);
+  if (cacheIndex !== -1) {
+      // 3. Perbarui hrg di dataCache (data mentah)
+      dataCache[cacheIndex].hrg = newHarga;
+  }
+  
+  // 4. Render ulang tabel
+  // Catatan: Karena Anda sudah memfilter, renderTable(dataCache)
+  // akan menggunakan dataCache yang sudah diubah, tetapi tetap
+  // menampilkan data yang difilter.
+  
+  // ⭐ PENTING: Panggil renderTable dengan dataCache untuk refresh tampilan yang difilter
+  renderTable(dataCache); 
+  
+  // Highlight row yang di-edit (perlu diperbaiki agar menggunakan displayedData)
+  // highlightNewRow(itemToUpdate.nama); 
 
-  // Kirim update ke server
+  // Kirim update ke server (menggunakan nama untuk identifikasi)
   await fetch(scriptURL, {
     method: "POST",
     body: JSON.stringify({
-      nama: dataCache[selectedIndex].nama,
+      nama: itemToUpdate.nama, // Kirim nama item yang di-edit
       hrg: newHarga,
-      isi: dataCache[selectedIndex].isi,
-      kategori: dataCache[selectedIndex].kategori,
+      isi: itemToUpdate.isi,
+      kategori: itemToUpdate.kategori,
       update: true
     })
   });
@@ -226,5 +281,5 @@ document.getElementById("searchInput").addEventListener("input", ()=>{
   renderTable(filtered);
 });
 
-loadData();
-
+// 3. Panggil loadData saat halaman selesai dimuat
+document.addEventListener('DOMContentLoaded', loadData);

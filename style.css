@@ -19,7 +19,7 @@ form {
   margin: auto;
 }
 input, select {
-  width: 100%;
+  width: -webkit-fill-available;
   margin-bottom: 10px;
   padding: 5px;
   border-radius: 5px;
@@ -56,9 +56,11 @@ button:hover { background: #120c3f; }
 .brand-lblue { font-weight:bold; color:#1ac2ff; }
 .navbarsearch input {
     margin: 0;
-    width: auto;
+    width: 120px;
 }
-.container { padding: 10px; }
+.container {
+    padding: 10px;
+}
 
 .table-wrapper {
   overflow-x:auto;
@@ -184,6 +186,7 @@ th {
 /* Add button di navbar */
 .navbarrightbutton {
     display: flex;
+    margin-left: 10px;
 }
 
 .btn-add {
@@ -228,8 +231,9 @@ th {
 .modal-content {
   background: white;
   padding: 20px;
-  border-radius: 5px;
-  width: 260px;
+  border-radius: 10px;
+  width: 180px;
+    justify-items: center;
 }
 
 .modal-actions {
@@ -243,7 +247,7 @@ th {
 }
 
 .modal-actions button {
-    margin-left: 10px;
+    padding: 5px 30px;
 }
 
 .modal-content p {
@@ -252,9 +256,65 @@ th {
 }
 
 .modal-content h3 {
-    margin: 10px 0;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.textbold {
+    font-weight: bold;
+    font-size: 16px;
+    margin: 20px 0 40px 0;
+}
+
+.textitalic {
+    font-style: italic;
 }
 
 td {
   cursor: pointer;
+}
+
+.separator {
+    border-top: 1px solid #ccc; /* For horizontal line */
+    width: 100%; /* Adjust as needed */
+    margin: 10px 0;
+}
+
+
+/*loading spinner*/
+/* Pastikan ini ada di tag <style> atau file .css Anda */
+.loading-overlay {
+  /* Overlay untuk menutupi seluruh area tabel */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8); /* Latar belakang semi-transparan */
+  display: flex; /* Untuk menengahkan spinner */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10; /* Pastikan di atas tabel */
+  transition: opacity 0.3s ease-in-out;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid #3498db; /* Warna spinner */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite; /* Animasi berputar */
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Sembunyikan secara default */
+.hidden {
+  display: none !important;
 }
