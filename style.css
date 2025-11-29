@@ -13,10 +13,8 @@ form {
   background: white;
   padding: 15px;
   border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   margin-bottom: 20px;
   max-width: 400px;
-  margin: auto;
 }
 input, select {
   width: -webkit-fill-available;
@@ -71,6 +69,10 @@ table {
   border-collapse: collapse;
   background: white;
   min-width: max-content;
+}
+
+.table-harga {
+    min-width: -webkit-fill-available;
 }
 
 th,td {
@@ -317,4 +319,12 @@ td {
 /* Sembunyikan secara default */
 .hidden {
   display: none !important;
+}
+
+/* tombol ubah harga disable ketika loading update */
+button:disabled {
+  background-color: #cccccc !important; /* Warna abu-abu */
+  color: #666666 !important;
+  cursor: not-allowed; /* Kursor berubah jadi tanda larangan */
+  transform: none; /* Hilangkan efek animasi jika ada */
 }

@@ -109,7 +109,7 @@ const modal = document.getElementById("dataModal");
 const addBtn = document.getElementById("addBtn");
 const closeBtn = modal.querySelector(".close");
 
-addBtn.onclick = () => modal.style.display = "block";
+addBtn.onclick = () => modal.style.display = "flex";
 closeBtn.onclick = () => modal.style.display = "none";
 window.onclick = e => { if(e.target==modal) modal.style.display="none"; };
 
@@ -168,7 +168,7 @@ function renderTable(list) {
       <td class="td-harga">${Number(row.hrg).toLocaleString('id-ID')}</td>
       <td class="td-isi">${Number(row.isi).toLocaleString('id-ID')}</td>
       <td class="td-pcs">${pcs.toLocaleString('id-ID')}</td>
-      <td class="td-kategori">${row.kategori}</td>
+      
     `;
 
     // ⭐ KUNCI: Event listener harus ada di sini
@@ -197,6 +197,9 @@ function openEditModal(index) {
   document.getElementById("displayPcs").textContent = pcs.toLocaleString('id-ID'); 
   document.getElementById("displayKategori").textContent = item.kategori;
 
+  document.getElementById("gambar").src = item.imglink;
+  document.getElementById("gambar").alt = item.nama;
+
   document.getElementById("editHrg").value = Number(item.hrg); // Nilai untuk input harus berupa angka mentah (tanpa toLocaleString)
   document.getElementById("editModal").style.display = "flex";
 }
@@ -208,45 +211,56 @@ function closeEditModal() {
 
 // Tombol Simpan Edit
 document.getElementById("saveEditBtn").addEventListener("click", async () => {
+  const saveBtn = document.getElementById("saveEditBtn");
   const newHarga = Number(document.getElementById("editHrg").value);
+  
   if (!newHarga || newHarga <= 0) return alert("Isi harga dengan benar!");
 
-  // 1. Ambil data item saat ini dari displayedData
-  const itemToUpdate = displayedData[selectedIndex];
-  if (!itemToUpdate) return;
-  
-  // 2. Cari index item ini di dataCache (data mentah) menggunakan nama
-  const cacheIndex = dataCache.findIndex(row => row.nama === itemToUpdate.nama);
+  // --- 1. UBAH TAMPILAN TOMBOL (LOADING STATE) ---
+  const originalText = saveBtn.textContent; // Simpan teks asli ("Ubah")
+  saveBtn.disabled = true;                  // Matikan tombol
+  saveBtn.textContent = "Menyimpan...";     // Ubah teks jadi loading
 
-  if (cacheIndex !== -1) {
-      // 3. Perbarui hrg di dataCache (data mentah)
-      dataCache[cacheIndex].hrg = newHarga;
+  try {
+    // Ambil data item saat ini dari displayedData
+    const itemToUpdate = displayedData[selectedIndex];
+    if (!itemToUpdate) throw new Error("Item tidak ditemukan");
+    
+    // Cari index item ini di dataCache (data mentah) menggunakan nama
+    const cacheIndex = dataCache.findIndex(row => row.nama === itemToUpdate.nama);
+
+    if (cacheIndex !== -1) {
+        // Perbarui hrg di dataCache local agar UI langsung berubah
+        dataCache[cacheIndex].hrg = newHarga;
+    }
+    
+    // Render ulang tabel segera (Optimistic UI)
+    renderTable(dataCache); 
+    
+    // Kirim update ke server Google Sheet
+    await fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify({
+        nama: itemToUpdate.nama,
+        hrg: newHarga,
+        isi: itemToUpdate.isi,
+        kategori: itemToUpdate.kategori,
+        update: true
+      })
+    });
+
+    // Tutup modal jika sukses
+    closeEditModal();
+
+  } catch (err) {
+    console.error(err);
+    alert("Gagal menyimpan data. Cek koneksi internet.");
+  } finally {
+    // --- 2. KEMBALIKAN TOMBOL KE SEMULA ---
+    // Bagian ini akan selalu dijalankan baik sukses maupun gagal
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalText;
   }
-  
-  // 4. Render ulang tabel
-  // Catatan: Karena Anda sudah memfilter, renderTable(dataCache)
-  // akan menggunakan dataCache yang sudah diubah, tetapi tetap
-  // menampilkan data yang difilter.
-  
-  // ⭐ PENTING: Panggil renderTable dengan dataCache untuk refresh tampilan yang difilter
-  renderTable(dataCache); 
-  
-  // Highlight row yang di-edit (perlu diperbaiki agar menggunakan displayedData)
-  // highlightNewRow(itemToUpdate.nama); 
-
-  // Kirim update ke server (menggunakan nama untuk identifikasi)
-  await fetch(scriptURL, {
-    method: "POST",
-    body: JSON.stringify({
-      nama: itemToUpdate.nama, // Kirim nama item yang di-edit
-      hrg: newHarga,
-      isi: itemToUpdate.isi,
-      kategori: itemToUpdate.kategori,
-      update: true
-    })
-  });
-
-  closeEditModal();
 });
 
 // ⭐ TAMBAHAN UNTUK MENUTUP MODAL JIKA KLIK DI LUAR AREA KONTEN ⭐
