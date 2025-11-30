@@ -22,6 +22,7 @@ input, select {
   padding: 5px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  min-width: 50px;
 }
 button {
   padding: 10px;
@@ -54,7 +55,7 @@ button:hover { background: #120c3f; }
 .brand-lblue { font-weight:bold; color:#1ac2ff; }
 .navbarsearch input {
     margin: 0;
-    width: 120px;
+    width: 70px;
 }
 .container {
     padding: 10px;
@@ -90,7 +91,12 @@ th {
 
 .td-nama { text-align:left }
 .td-kategori { text-align:right; }
-.td-harga, .td-isi, .td-pcs { text-align:right }
+.td-hpp, .td-isi, .td-pcs, .td-hrg { text-align:right }
+.td-hrg {
+    color: red;
+    font-weight: bold;
+}
+
 
 .action-col { width:70px }
 .btn-action {
@@ -214,6 +220,7 @@ th {
   border-radius: 5px;
   border: 1px solid #ccc;
   margin-bottom: 0;
+  width: 90px;
 }
 
 /*modal edit harga*/
@@ -266,6 +273,7 @@ th {
     font-weight: bold;
     font-size: 16px;
     margin: 20px 0 40px 0;
+    color: red;
 }
 
 .textitalic {
@@ -280,6 +288,10 @@ td {
     border-top: 1px solid #ccc; /* For horizontal line */
     width: 100%; /* Adjust as needed */
     margin: 10px 0;
+}
+
+.edithpp {
+    width: -webkit-fill-available;
 }
 
 
@@ -327,4 +339,57 @@ button:disabled {
   color: #666666 !important;
   cursor: not-allowed; /* Kursor berubah jadi tanda larangan */
   transform: none; /* Hilangkan efek animasi jika ada */
+}
+
+
+/* --- LOGIN & ADMIN STYLES --- */
+
+/* Default: Sembunyikan elemen khusus admin */
+.admin-only {
+  display: none !important;
+}
+
+/* Jika Body punya class 'is-admin', tampilkan elemen admin */
+body.is-admin .admin-only {
+  display: block !important;
+}
+
+/* Khusus untuk Tabel (supaya tidak merusak struktur tabel) */
+th.admin-col, td.admin-col {
+  display: none;
+}
+body.is-admin th.admin-col, 
+body.is-admin td.admin-col {
+  display: table-cell;
+}
+
+/* Tombol Login di Navbar */
+.btn-login {
+  background: transparent;
+  border: 1px solid #fff;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+  font-size: 12px;
+}
+.btn-login:hover { background: rgba(255,255,255,0.2); }
+
+/* Tombol Logout (merah dikit) */
+.btn-logout {
+  background: #dc3545; 
+  border: none;
+}
+
+/* Login Modal Kecil */
+#loginModal .modal-content {
+  width: 300px;
+  text-align: center;
+}
+#loginPass {
+  width: 80%;
+  padding: 8px;
+  margin: 10px 0;
+  text-align: center;
 }

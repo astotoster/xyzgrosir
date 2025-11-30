@@ -3,6 +3,74 @@ let dataCache = [];
 let currentCategory = "all";
 let displayedData = [];
 
+let isAdmin = false; // Default: Belum login
+
+// Cek apakah user pernah login sebelumnya (disimpan di browser)
+if (localStorage.getItem("adminStatus") === "true") {
+  isAdmin = true;
+  document.body.classList.add("is-admin");
+}
+
+// --- FUNGSI LOGIN ---
+const loginBtn = document.getElementById("loginBtn");
+const loginModal = document.getElementById("loginModal");
+
+// Klik tombol Login di Navbar
+loginBtn.onclick = () => {
+  if (isAdmin) {
+    // Kalau sudah login, jadinya tombol Logout
+    if(confirm("Yakin ingin Logout?")) {
+      isAdmin = false;
+      localStorage.removeItem("adminStatus");
+      document.body.classList.remove("is-admin");
+      loginBtn.textContent = "Login";
+      loginBtn.classList.remove("btn-logout");
+      renderTable(dataCache); // Render ulang tabel untuk sembunyikan kolom
+    }
+  } else {
+    // Kalau belum login, buka modal
+    loginModal.style.display = "flex";
+    document.getElementById("loginPass").value = "";
+    document.getElementById("loginPass").focus();
+  }
+};
+
+function closeLoginModal() {
+  loginModal.style.display = "none";
+}
+
+function checkLogin() {
+  const pass = document.getElementById("loginPass").value;
+  
+  // --- PASSWORD SETTING DI SINI ---
+  if (pass === "admin123") { // Ganti password sesuai keinginan
+    isAdmin = true;
+    localStorage.setItem("adminStatus", "true"); // Simpan sesi
+    document.body.classList.add("is-admin"); // Munculkan menu admin via CSS
+    
+    loginBtn.textContent = "Logout";
+    loginBtn.classList.add("btn-logout");
+    
+    closeLoginModal();
+    renderTable(dataCache); // Render ulang untuk memunculkan kolom
+    alert("Login Berhasil!");
+  } else {
+    alert("Password Salah!");
+  }
+}
+
+// Trigger enter di input password
+document.getElementById("loginPass").addEventListener("keypress", function(event) {
+  if (event.key === "Enter") checkLogin();
+});
+
+// Update tampilan tombol saat pertama load
+if (isAdmin) {
+    loginBtn.textContent = "Logout";
+    loginBtn.classList.add("btn-logout");
+}
+
+
 // Ambil elemen loading
 const loadingIndicator = document.getElementById("loadingIndicator");
 
@@ -22,16 +90,17 @@ function hideLoading() {
 
 // --- LOAD DATA ---
 async function loadData() {
+  showLoading();
   try {
     const res = await fetch(scriptURL);
     let data = await res.json();
 
-    data = data.filter(r => r.nama && r.hrg && r.isi);
+    data = data.filter(r => r.nama && r.hpp && r.isi);
     data.sort((a,b) => String(a.nama).localeCompare(String(b.nama)));
     dataCache = data;
 
     renderTable(dataCache);
-    populateKategoriDropdown();
+    updateCategoryDropdowns();
 
     } catch (err) {
       console.error("Gagal memuat data:", err);
@@ -41,7 +110,36 @@ async function loadData() {
     }
 }
 
-// --- RENDER TABLE ---
+// --- FUNGSI BARU: ISI DROPDOWN KATEGORI (FILTER & MODAL) ---
+function updateCategoryDropdowns() {
+  // Ambil semua kategori unik dari data
+  const kategoriSet = new Set(dataCache.map(row => row.kategori).filter(k => k));
+  
+  // 1. Isi Dropdown Filter (Navbar)
+  const filterSelect = document.getElementById("filterKategori");
+  filterSelect.innerHTML = '<option value="">Semua</option>';
+  
+  // 2. Isi Dropdown Modal (Form Tambah)
+  const modalSelect = document.getElementById("kategori");
+  modalSelect.innerHTML = '<option value="" disabled selected>Pilih Kategori</option>';
+  
+  // Loop data kategori
+  kategoriSet.forEach(k => {
+    // Tambah ke Filter
+    const optFilter = document.createElement("option");
+    optFilter.value = k;
+    optFilter.textContent = k;
+    filterSelect.appendChild(optFilter);
+
+    // Tambah ke Modal
+    const optModal = document.createElement("option");
+    optModal.value = k;
+    optModal.textContent = k;
+    modalSelect.appendChild(optModal);
+  });
+}
+
+// --- RENDER TABLE --- (SAYA HANYA PAKAI 1 VERSI YANG BENAR DISINI)
 function renderTable(list) {
   const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
@@ -49,44 +147,31 @@ function renderTable(list) {
   const filtered = currentCategory === "all" ? list :
     list.filter(r => (r.kategori||"").toLowerCase() === currentCategory);
 
-  // ⭐ BARU: Simpan data yang difilter ke displayedData
   displayedData = filtered;
 
-  // Ubah list menjadi displayedData
-  displayedData.forEach((row, index) => { // Gunakan 'index' dari displayedData
-    const pcs = Math.round(Number(row.hrg)/Number(row.isi));
+  displayedData.forEach((row, index) => { 
+    // Hitung Pcs (Estimasi dari Harga Jual / Isi)
+    const hpp = Number(row.hpp); 
+    const isi = Number(row.isi);
+    const pcs = isi ? Math.round( hpp / isi ) : 0; 
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${index + 1}</td>
       <td class="td-nama">${row.nama}</td>
-      <td class="td-harga">${Number(row.hrg).toLocaleString('id-ID')}</td>
-      <td class="td-isi">${Number(row.isi).toLocaleString('id-ID')}</td>
-      <td class="td-pcs">${pcs.toLocaleString('id-ID')}</td>
-      <td class="td-kategori">${row.kategori}</td>
+      <td class="td-hpp admin-col">${Number(row.hpp).toLocaleString('id-ID')}</td>
+      <td class="td-isi">${isi.toLocaleString('id-ID')}</td>
+      <td class="td-pcs admin-col">${pcs.toLocaleString('id-ID')}</td>
+      <td class="td-hrg">${Number(row.hrg).toLocaleString('id-ID')}</td>
     `;
     
-    // ⭐ PENTING: Gunakan index dari displayedData, ini sudah benar
     tr.addEventListener("click", () => openEditModal(index));
     tbody.appendChild(tr);
   });
 }
 
-
-
 // --- CATEGORY BUTTONS ---
 const filterKategori = document.getElementById("filterKategori");
-
-function populateKategoriDropdown() {
-  const kategoriSet = new Set(dataCache.map(row => row.kategori).filter(k => k));
-  filterKategori.innerHTML = '<option value="">Semua</option>';
-  kategoriSet.forEach(k => {
-    const option = document.createElement("option");
-    option.value = k;
-    option.textContent = k;
-    filterKategori.appendChild(option);
-  });
-}
-
 
 filterKategori.addEventListener("change", () => {
   const keyword = document.getElementById("searchInput").value.toLowerCase();
@@ -113,94 +198,95 @@ addBtn.onclick = () => modal.style.display = "flex";
 closeBtn.onclick = () => modal.style.display = "none";
 window.onclick = e => { if(e.target==modal) modal.style.display="none"; };
 
-// --- SUBMIT FORM ---
-document.getElementById("dataForm").addEventListener("submit", async e=>{
+
+// --- SUBMIT FORM (TAMBAH DATA) ---
+document.getElementById("dataForm").addEventListener("submit", async e => {
   e.preventDefault();
   const btn = e.target.querySelector("button");
+  
+  // Ambil nilai HPP
+  const hppVal = Number(document.getElementById("hpp").value);
+  const isiVal = Number(document.getElementById("isi").value);
+  const katVal = document.getElementById("kategori").value;
+  const namaVal = document.getElementById("nama").value.trim();
+
+  // Validasi sederhana
+  if(!hppVal || !isiVal || !namaVal || !katVal) {
+     alert("Lengkapi semua data!"); return;
+  }
+
   btn.disabled = true;
   btn.textContent = "Mengirim…";
 
+  // Payload: kirim HPP, bukan Harga Jual
   const payload = {
-    nama: document.getElementById("nama").value.trim(),
-    hrg: Number(document.getElementById("hrg").value),
-    isi: Number(document.getElementById("isi").value),
-    kategori: document.getElementById("kategori").value.trim()
+    nama: namaVal,
+    hpp: hppVal,   // Kirim ke script sebagai HPP (Col B)
+    isi: isiVal,
+    kategori: katVal
   };
 
   try {
-    await fetch(scriptURL,{method:"POST",body:JSON.stringify(payload)});
-    dataCache.push(payload);
-    dataCache.sort((a,b)=>String(a.nama).localeCompare(String(b.nama)));
-    renderTable(dataCache);
-    highlightNewRow(payload.nama);
+    await fetch(scriptURL, {method:"POST", body:JSON.stringify(payload)});
+    await loadData(); // Reload agar tabel update dengan harga hasil rumus
+    
     e.target.reset();
     modal.style.display = "none";
+    alert("Data tersimpan!");
   } catch(err){
     console.error(err);
     alert("❌ Gagal kirim data");
   } finally {
-    btn.disabled=false;
-    btn.textContent="Kirim Data";
+    btn.disabled = false;
+    btn.textContent = "Kirim Data";
   }
 });
+
 
 // --POP UP MODAL EDIT HARGA--
 let selectedIndex = null;
 
-// --- RENDER TABLE --- (Ini adalah fungsi yang harus dipertahankan)
-function renderTable(list) {
-  const tbody = document.querySelector("#dataTable tbody");
-    tbody.innerHTML = "";
-
-  const filtered = currentCategory === "all" ? list :
-    list.filter(r => (r.kategori||"").toLowerCase() === currentCategory);
-
-  // ⭐ KUNCI: Simpan data yang difilter ke displayedData
-  displayedData = filtered;
-
-  // Gunakan displayedData untuk looping
-  displayedData.forEach((row, index) => { 
-    const pcs = Math.round(Number(row.hrg)/Number(row.isi));
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${index + 1}</td>
-      <td class="td-nama">${row.nama}</td>
-      <td class="td-harga">${Number(row.hrg).toLocaleString('id-ID')}</td>
-      <td class="td-isi">${Number(row.isi).toLocaleString('id-ID')}</td>
-      <td class="td-pcs">${pcs.toLocaleString('id-ID')}</td>
-      
-    `;
-
-    // ⭐ KUNCI: Event listener harus ada di sini
-    tr.addEventListener("click", () => openEditModal(index));
-    tbody.appendChild(tr);
-});
-}
-
-
 // Buka modal dan isi dengan harga saat ini
 function openEditModal(index) {
   selectedIndex = index;
-  // ⭐ UBAH: Ambil data dari displayedData
   const item = displayedData[index]; 
-  
-  // Pastikan item ada
   if (!item) return;
 
+  // Isi data text (Label)
   document.getElementById("displayNama").textContent = item.nama;
   document.getElementById("displayHrg").textContent = Number(item.hrg).toLocaleString('id-ID');
   document.getElementById("displayIsi").textContent = Number(item.isi).toLocaleString('id-ID');
-  // Catatan: Anda tidak menyimpan 'pcs' di dataCache. Hitung ulang jika perlu,
-  // atau ambil nilai pcs yang sudah dihitung jika ada. Karena Anda tidak menyimpannya
-  // di dataCache, hitungan pcs mungkin perlu disesuaikan di sini.
-  const pcs = Math.round(Number(item.hrg) / Number(item.isi));
+  const pcs = Math.round(Number(item.hpp) / Number(item.isi));
   document.getElementById("displayPcs").textContent = pcs.toLocaleString('id-ID'); 
   document.getElementById("displayKategori").textContent = item.kategori;
+  
+  // Gambar
+  const imgElement = document.getElementById("gambar");
+  if(item.imglink) {
+      imgElement.src = item.imglink;
+      imgElement.style.display = "block";
+  } else {
+      imgElement.style.display = "none";
+  }
 
-  document.getElementById("gambar").src = item.imglink;
-  document.getElementById("gambar").alt = item.nama;
+  // --- LOGIKA ADMIN DI MODAL ---
+  // Pastikan ID ini konsisten. Di HTML sebelumnya ID-nya "editHrg"
+  const editInput = document.getElementById("editHpp"); 
+  const saveBtn = document.getElementById("saveEditBtn");
 
-  document.getElementById("editHrg").value = Number(item.hrg); // Nilai untuk input harus berupa angka mentah (tanpa toLocaleString)
+  if (isAdmin) {
+      // Jika Admin: Tampilkan Input Edit HPP & Tombol Simpan
+      editInput.style.display = "inline-block";
+      saveBtn.style.display = "block";
+      
+      editInput.placeholder = "Edit HPP (Modal)";
+      editInput.value = Number(item.hpp); // Admin edit HPP
+  } else {
+      // Jika User Biasa: Sembunyikan Input & Tombol
+      editInput.style.display = "none";
+      saveBtn.style.display = "none";
+  }
+
   document.getElementById("editModal").style.display = "flex";
 }
 
@@ -212,14 +298,16 @@ function closeEditModal() {
 // Tombol Simpan Edit
 document.getElementById("saveEditBtn").addEventListener("click", async () => {
   const saveBtn = document.getElementById("saveEditBtn");
-  const newHarga = Number(document.getElementById("editHrg").value);
+
+  // PERBAIKAN: Gunakan ID "editHpp" sesuai dengan HTML dan fungsi openEditModal
+  const newHpp = Number(document.getElementById("editHpp").value); 
   
-  if (!newHarga || newHarga <= 0) return alert("Isi harga dengan benar!");
+  if (!newHpp || newHpp <= 0) return alert("Isi HPP dengan benar!");
 
   // --- 1. UBAH TAMPILAN TOMBOL (LOADING STATE) ---
-  const originalText = saveBtn.textContent; // Simpan teks asli ("Ubah")
-  saveBtn.disabled = true;                  // Matikan tombol
-  saveBtn.textContent = "Menyimpan...";     // Ubah teks jadi loading
+  const originalText = saveBtn.textContent; 
+  saveBtn.disabled = true;                  
+  saveBtn.textContent = "Menyimpan...";     
 
   try {
     // Ambil data item saat ini dari displayedData
@@ -230,8 +318,8 @@ document.getElementById("saveEditBtn").addEventListener("click", async () => {
     const cacheIndex = dataCache.findIndex(row => row.nama === itemToUpdate.nama);
 
     if (cacheIndex !== -1) {
-        // Perbarui hrg di dataCache local agar UI langsung berubah
-        dataCache[cacheIndex].hrg = newHarga;
+        // Perbarui hpp di dataCache local agar UI langsung berubah
+        dataCache[cacheIndex].hpp = newHpp;
     }
     
     // Render ulang tabel segera (Optimistic UI)
@@ -242,12 +330,15 @@ document.getElementById("saveEditBtn").addEventListener("click", async () => {
       method: "POST",
       body: JSON.stringify({
         nama: itemToUpdate.nama,
-        hrg: newHarga,
+        hpp: newHpp,
         isi: itemToUpdate.isi,
         kategori: itemToUpdate.kategori,
         update: true
       })
     });
+    
+    // Reload data (karena harga jual berubah via rumus di sheet)
+    await loadData(); 
 
     // Tutup modal jika sukses
     closeEditModal();
@@ -257,7 +348,6 @@ document.getElementById("saveEditBtn").addEventListener("click", async () => {
     alert("Gagal menyimpan data. Cek koneksi internet.");
   } finally {
     // --- 2. KEMBALIKAN TOMBOL KE SEMULA ---
-    // Bagian ini akan selalu dijalankan baik sukses maupun gagal
     saveBtn.disabled = false;
     saveBtn.textContent = originalText;
   }
