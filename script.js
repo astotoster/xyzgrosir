@@ -5,6 +5,45 @@ let displayedData = [];
 
 let isAdmin = false; // Default: Belum login
 
+const confirmModal = document.getElementById("customConfirmModal");
+const confirmOkBtn = document.getElementById("confirmOkBtn");
+const confirmCancelBtn = document.getElementById("confirmCancelBtn");
+const confirmMessage = document.getElementById("confirmMessage");
+const confirmTitle = document.getElementById("confirmTitle");
+
+/**
+ * Menampilkan modal konfirmasi kustom.
+ * @param {string} message - Pesan yang akan ditampilkan.
+ * @param {function} callbackOk - Fungsi yang dijalankan jika user menekan OK.
+ * @param {string} title - Judul modal (opsional).
+ */
+function showCustomConfirm(message, callbackOk, title = "Konfirmasi") {
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    confirmModal.style.display = 'flex'; // Tampilkan modal
+
+    // Hapus event listener sebelumnya (agar tidak menumpuk)
+    confirmOkBtn.replaceWith(confirmOkBtn.cloneNode(true));
+    confirmCancelBtn.replaceWith(confirmCancelBtn.cloneNode(true));
+    
+    // Ambil ulang referensi tombol setelah clone (penting!)
+    const newConfirmOkBtn = document.getElementById("confirmOkBtn");
+    const newConfirmCancelBtn = document.getElementById("confirmCancelBtn");
+
+    // Event saat tombol OK ditekan
+    newConfirmOkBtn.onclick = () => {
+        confirmModal.style.display = 'none'; // Sembunyikan modal
+        callbackOk(); // Jalankan fungsi callback
+    };
+
+    // Event saat tombol Batal ditekan
+    newConfirmCancelBtn.onclick = () => {
+        confirmModal.style.display = 'none'; // Sembunyikan modal
+    };
+}
+
+
+
 // Cek apakah user pernah login sebelumnya (disimpan di browser)
 if (localStorage.getItem("adminStatus") === "true") {
   isAdmin = true;
@@ -19,16 +58,20 @@ const loginModal = document.getElementById("loginModal");
 loginBtn.onclick = () => {
   if (isAdmin) {
     // Kalau sudah login, jadinya tombol Logout
-    if(confirm("Yakin ingin Logout?")) {
-      isAdmin = false;
-      localStorage.removeItem("adminStatus");
-      document.body.classList.remove("is-admin");
-      loginBtn.textContent = "Login";
-      loginBtn.classList.remove("btn-logout");
-      renderTable(dataCache); // Render ulang tabel untuk sembunyikan kolom
-    }
+    
+    // GANTI BAGIAN INI DENGAN CUSTOM CONFIRM:
+    showCustomConfirm("Yakin ingin Logout dari mode Admin?", () => {
+        // Logika Logout dipindahkan ke dalam callback
+        isAdmin = false;
+        localStorage.removeItem("adminStatus");
+        document.body.classList.remove("is-admin");
+        loginBtn.textContent = "Login";
+        loginBtn.classList.remove("btn-logout");
+        renderTable(dataCache); // Render ulang tabel
+    }, "Logout"); // Tambahkan judul
+
   } else {
-    // Kalau belum login, buka modal
+    // Kalau belum login, buka modal login
     loginModal.style.display = "flex";
     document.getElementById("loginPass").value = "";
     document.getElementById("loginPass").focus();
