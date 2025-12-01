@@ -206,6 +206,7 @@ function renderTable(list) {
       <td class="td-isi">${isi.toLocaleString('id-ID')}</td>
       <td class="td-pcs admin-col">${pcs.toLocaleString('id-ID')}</td>
       <td class="td-hrg">${Number(row.hrg).toLocaleString('id-ID')}</td>
+      <td class="td-hrgpcs">${Number(row.hrgpcs).toLocaleString('id-ID')}</td>
     `;
     
     tr.addEventListener("click", () => openEditModal(index));
@@ -302,6 +303,7 @@ function openEditModal(index) {
   const pcs = Math.round(Number(item.hpp) / Number(item.isi));
   document.getElementById("displayPcs").textContent = pcs.toLocaleString('id-ID'); 
   document.getElementById("displayKategori").textContent = item.kategori;
+  document.getElementById("displayHrgpcs").textContent = Number(item.hrgpcs).toLocaleString('id-ID');
   
   // Gambar
   const imgElement = document.getElementById("gambar");

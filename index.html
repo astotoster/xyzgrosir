@@ -42,7 +42,8 @@
         <th class="admin-col">HPP</th> 
         <th>Isi</th>
         <th class="admin-col">Pcs</th> 
-        <th>Harga</th> </tr>
+        <th>Harga</th>
+        <th>Hrg/pcs</th> </tr>
     </thead>
     <tbody></tbody>
     </table>
@@ -71,16 +72,15 @@
     <div class="textbold">Rp: <span id="displayHrg"></span></div>
     
     <div class="separator"></div>
-    <p>Isi /dus : <span id="displayIsi"></span></p>
+    <p>Harga /pcs : <span style="font-weight: bold;" id="displayHrgpcs"></span></p>
     <div class="separator"></div>
-    <p>Harga /pcs : <span id="displayHrgpcs"></span></p>
+    <p>Isi /dus : <span id="displayIsi"></span></p>
     <div class="separator"></div>
     <p>Kategori : <span id="displayKategori"></span></p>
     <div class="separator"></div>
     <p><img id="gambar" style="width:120px; height:auto;"></p>
-    <div class="separator"></div>
     <div class="edithpp admin-only">
-        <p style="display:flex; align-items:center; gap:5px;"> <span style="min-width: max-content; margin-bottom: 10px;">HPP : </span> <input type="number" id="editHpp" placeholder="Harga baru" required /></p>
+        <p style="display:flex; align-items:center; gap:5px; max-width: -webkit-fill-available;"> <span style="min-width: max-content; margin-bottom: 10px;">HPP : </span> <input type="number" id="editHpp" placeholder="Harga baru" required /></p>
         <p><span>HPP /pcs : </span><span id="displayPcs"></span></p>
         <div class="modal-actions">
             <button id="saveEditBtn">Ubah</button>

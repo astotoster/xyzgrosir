@@ -11,7 +11,7 @@ h2 {
 }
 form {
   background: white;
-  padding: 15px;
+  padding: 10px;
   border-radius: 10px;
   margin-bottom: 20px;
   max-width: 400px;
@@ -91,12 +91,14 @@ th {
 
 .td-nama { text-align:left }
 .td-kategori { text-align:right; }
-.td-hpp, .td-isi, .td-pcs, .td-hrg { text-align:right }
+.td-hpp, .td-isi, .td-pcs, .td-hrg, .td-hrgpcs { text-align:right }
 .td-hrg {
     color: red;
     font-weight: bold;
 }
-
+.td-hrgpcs {
+    font-weight: bold;
+}
 
 .action-col { width:70px }
 .btn-action {
@@ -272,7 +274,7 @@ th {
 .textbold {
     font-weight: bold;
     font-size: 16px;
-    margin: 20px 0 40px 0;
+    margin: 20px 0 20px 0;
     color: red;
 }
 
@@ -292,6 +294,8 @@ td {
 
 .edithpp {
     width: -webkit-fill-available;
+    margin-top: 20px;
+    justify-items: center;
 }
 
 
