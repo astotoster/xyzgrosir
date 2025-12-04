@@ -416,3 +416,35 @@ body.is-admin td.admin-col {
 .modal-actions {
   margin-top: 15px;
 }
+
+/* hi light last update */
+
+/* ⭐ BARU: Style untuk baris yang baru diupdate (Kurang dari 7 hari) ⭐ */
+.recently-updated {
+    background-color: #91dba5 !important; /* Hijau muda */
+}
+
+/* Pertahankan hover, tapi jangan sampai menimpa recently-updated jika lebih spesifik */
+#dataTable tbody tr:hover:not(.recently-updated){ 
+    background:#f0f8ff; 
+}
+
+/* Jika baris baru (animasi 3 detik) juga baru diupdate */
+.new-row.recently-updated {
+    /* Atur agar highlight hijau muda tetap ada setelah animasi new-row selesai */
+    animation: fadeNewRowToRecent 3s forwards;
+}
+
+/* Modifikasi animasi new-row agar kembali ke warna hijau muda, bukan putih */
+@keyframes fadeNewRowToRecent {
+    0% { background: #d6f0ff !important; } /* Warna awal new-row */
+    100% { background: #91dba5 !important; } /* Warna akhir: warna recently-updated */
+}
+
+/* Jika tidak ada new-row, kembalikan saja yang lama */
+.new-row:not(.recently-updated) {
+    animation:fadeRow 3s forwards;
+}
+@keyframes fadeRow{
+  100%{background:white}
+}

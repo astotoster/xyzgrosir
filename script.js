@@ -198,7 +198,15 @@ function renderTable(list) {
     const isi = Number(row.isi);
     const pcs = isi ? Math.round( hpp / isi ) : 0; 
 
+    // ⭐ BARU: Cek apakah baru diupdate
+    const isRecent = isRecentlyUpdated(row.lastupdate);
+    
     const tr = document.createElement("tr");
+    // ⭐ BARU: Tambahkan class jika baru diupdate
+    if (isRecent) {
+        tr.classList.add("recently-updated");
+    }
+
     tr.innerHTML = `
       <td>${index + 1}</td>
       <td class="td-nama">${row.nama}</td>
@@ -231,6 +239,43 @@ filterKategori.addEventListener("change", () => {
 
   renderTable(filtered);
 });
+
+
+// Fungsi pembantu untuk memformat tanggal
+function formatTanggal(dateString) {
+    if (!dateString) return "-";
+    try {
+        const date = new Date(dateString);
+        // Cek jika date invalid
+        if (isNaN(date)) return "-"; 
+        // const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        const options = { year: 'numeric', month: 'long', day: 'numeric'};
+        return date.toLocaleDateString('id-ID', options);
+    } catch(e) {
+        console.error("Gagal format tanggal:", e);
+        return dateString; // Tampilkan string asli jika gagal
+    }
+}
+
+/**
+ * Cek apakah tanggal update kurang dari 7 hari yang lalu.
+ * @param {string|Date} dateString - Tanggal terakhir update dari data.
+ * @returns {boolean} - true jika kurang dari 7 hari, false jika lebih.
+ */
+function isRecentlyUpdated(dateString) {
+    if (!dateString) return false;
+    const updateDate = new Date(dateString);
+    const now = new Date();
+    
+    // Hitung selisih waktu dalam milidetik
+    const timeDifference = now.getTime() - updateDate.getTime();
+    
+    // Tentukan batasan 7 hari dalam milidetik (7 hari * 24 jam/hari * 60 menit/jam * 60 detik/menit * 1000 ms/detik)
+    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+
+    // Bandingkan selisih waktu dengan 7 hari
+    return timeDifference < sevenDaysInMs;
+}
 
 
 // --- POPUP MODAL ---
@@ -290,6 +335,9 @@ document.getElementById("dataForm").addEventListener("submit", async e => {
 // --POP UP MODAL EDIT HARGA--
 let selectedIndex = null;
 
+
+
+
 // Buka modal dan isi dengan harga saat ini
 function openEditModal(index) {
   selectedIndex = index;
@@ -304,6 +352,7 @@ function openEditModal(index) {
   document.getElementById("displayPcs").textContent = pcs.toLocaleString('id-ID'); 
   document.getElementById("displayKategori").textContent = item.kategori;
   document.getElementById("displayHrgpcs").textContent = Number(item.hrgpcs).toLocaleString('id-ID');
+  document.getElementById("displayLastUpdate").textContent = formatTanggal(item.lastupdate);
   
   // Gambar
   const imgElement = document.getElementById("gambar");
